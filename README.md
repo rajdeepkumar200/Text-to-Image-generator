@@ -1,12 +1,12 @@
-# 🎨 GenAI Text-to-Image Generator
+# GenAI Text-to-Image Generator
 
 > Type a sentence. Get a stunning image. That's it.
 
 I built this project to explore how far you can push image quality on free hardware — specifically a T4 GPU in Google Colab. The result is a pipeline that combines two SDXL models in sequence to produce images that genuinely look good, not just "AI-generated good."
 
----
+\---
 
-## 🖼️ Sample Output
+## Sample Output
 
 Here's a real image generated with this pipeline — no post-processing, straight out of the model:
 
@@ -22,9 +22,9 @@ Here's a real image generated with this pipeline — no post-processing, straigh
 
 > This is real output from the pipeline — no editing, no cherry-picking. What you see is what the model produced.
 
----
+\---
 
-## 💡 What It Does
+## What It Does
 
 You give it a text prompt, pick a style from a dropdown, and it generates a high-resolution image. Simple on the surface — but there's a two-stage process running underneath that makes a real difference in quality.
 
@@ -33,86 +33,94 @@ You give it a text prompt, pick a style from a dropdown, and it generates a high
 **Stage 2 — SDXL Refiner** picks up those latents and polishes them — adding sharpness, fine texture, and detail in the final 20%. This is what separates it from a basic single-model pipeline.
 
 **Style options you can choose from:**
-- `realistic image` — adds professional photography keywords under the hood (8K UHD, masterpiece, etc.)
-- `animated image` — anime/cartoon aesthetic
-- `sketch type image` — pencil/line art look
-- `high vfx image` — cinematic, Hollywood-grade visual effects feel
-- `None` — pure prompt, no modifier
 
----
+* `realistic image` — adds professional photography keywords under the hood (8K UHD, masterpiece, etc.)
+* `animated image` — anime/cartoon aesthetic
+* `sketch type image` — pencil/line art look
+* `high vfx image` — cinematic, Hollywood-grade visual effects feel
+* `None` — pure prompt, no modifier
 
-## 🛠️ Tech Stack
+\---
 
-| What | Why |
-|---|---|
-| `stabilityai/stable-diffusion-xl-base-1.0` | Core generation model |
-| `stabilityai/stable-diffusion-xl-refiner-1.0` | Detail refinement pass |
-| Hugging Face `diffusers` | Pipeline orchestration |
-| PyTorch | FP16 inference + FP32 VAE decode |
-| `ipywidgets` | Interactive style dropdown in Colab |
-| Google Colab T4 GPU | Free hardware this was built and tested on |
+## Tech Stack
 
----
+|What|Why|
+|-|-|
+|`stabilityai/stable-diffusion-xl-base-1.0`|Core generation model|
+|`stabilityai/stable-diffusion-xl-refiner-1.0`|Detail refinement pass|
+|Hugging Face `diffusers`|Pipeline orchestration|
+|PyTorch|FP16 inference + FP32 VAE decode|
+|`ipywidgets`|Interactive style dropdown in Colab|
+|Google Colab T4 GPU|Free hardware this was built and tested on|
 
-## 🧠 Engineering Decisions Worth Knowing
+\---
+
+## Engineering Decisions Worth Knowing
 
 ### Why sequential loading?
+
 SDXL Base + Refiner together are too large to fit in T4 VRAM simultaneously. Instead of giving up or downgrading the model, the pipeline loads Base → generates latents → **deletes Base and clears VRAM** → loads Refiner → finishes the image → **deletes Refiner**. Both models run, nothing crashes.
 
 ### Why FP32 for VAE decode?
+
 T4 GPUs have a known bug where FP16 precision during the final VAE decode step produces completely black images. It's a subtle issue that burned a lot of debugging time. The fix is just one line — cast the VAE to `float32` before decode — but you have to know it exists.
 
 ### Why 80/20 denoising split?
+
 This is the officially recommended configuration for SDXL when using Base + Refiner together. The Base builds the structure; the Refiner handles surface detail. Splitting at 80% gives each model what it's actually good at.
 
----
+\---
 
-## 📁 Folder Structure
+## Folder Structure
 
 ```
 text-to-image-generator/
 │
 ├── notebooks/
-│   └── Text_to_image_generator.ipynb   # The full pipeline
+│   └── Text\\\_to\\\_image\\\_generator.ipynb   # The full pipeline
 │
 ├── outputs/
-│   └── generated_image.png             # Where your images get saved
+│   └── generated\\\_image.png             # Where your images get saved
 │
 └── README.md
 ```
 
----
+\---
 
-## 🚀 How to Run It
+## How to Run It
 
 ### What you need before starting
-- A Google account (for Colab)
-- A free Hugging Face account + access token → [get one here](https://huggingface.co/settings/tokens)
-- Accept terms for both models: [SDXL Base](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0) and [SDXL Refiner](https://huggingface.co/stabilityai/stable-diffusion-xl-refiner-1.0)
+
+* A Google account (for Colab)
+* A free Hugging Face account + access token → [get one here](https://huggingface.co/settings/tokens)
+* Accept terms for both models: [SDXL Base](https://huggingface.co/stabilityai/stable-diffusion-xl-base-1.0) and [SDXL Refiner](https://huggingface.co/stabilityai/stable-diffusion-xl-refiner-1.0)
 
 ### Running it
 
 **1. Open the notebook in Colab**
 
-Either upload it manually or click: [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](YOUR_COLAB_LINK_HERE)
+Either upload it manually or click: [!\[Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](YOUR\_COLAB\_LINK\_HERE)
 
 **2. Switch to a GPU runtime**
+
 ```
 Runtime → Change runtime type → T4 GPU
 ```
 
 **3. Add your Hugging Face token as a Colab Secret**
 
-Left sidebar → 🔑 Secrets → New secret → name it `HF_TOKEN` → paste your token.
+Left sidebar → 🔑 Secrets → New secret → name it `HF\\\_TOKEN` → paste your token.
 
 **4. Run all cells**
+
 ```
 Runtime → Run all  (Ctrl+F9)
 ```
 
-> **Heads up:** The first cell installs libraries and deliberately restarts the session. That's expected — just keep running the cells after it comes back.
+> \\\*\\\*Heads up:\\\*\\\* The first cell installs libraries and deliberately restarts the session. That's expected — just keep running the cells after it comes back.
 
 **5. Enter your prompts when asked**
+
 ```
 Enter a detailed prompt: a futuristic city at night, neon reflections on wet streets
 Enter a negative prompt: blurry, low quality, watermark, deformed
@@ -120,9 +128,9 @@ Enter a negative prompt: blurry, low quality, watermark, deformed
 
 **6. Pick your style from the dropdown and run the generation cell.** The image shows up inline and saves automatically.
 
----
+\---
 
-## 📦 Requirements
+## Requirements
 
 ```txt
 diffusers>=0.21.0
@@ -138,24 +146,24 @@ matplotlib>=3.7.0
 pip install -r requirements.txt
 ```
 
----
+\---
 
-## 📊 Performance
+## Performance
 
-| Setting | Value |
-|---|---|
-| Output resolution | 1024 × 1024 |
-| Inference steps | 30 (24 Base + 6 Refiner) |
-| Denoising split | 80% Base / 20% Refiner |
-| Precision | FP16 inference, FP32 VAE decode |
-| GPU memory | Fits in 16GB via sequential loading |
-| Total generation time | ~2–4 min on T4 (model loading is the bottleneck) |
+|Setting|Value|
+|-|-|
+|Output resolution|1024 × 1024|
+|Inference steps|30 (24 Base + 6 Refiner)|
+|Denoising split|80% Base / 20% Refiner|
+|Precision|FP16 inference, FP32 VAE decode|
+|GPU memory|Fits in 16GB via sequential loading|
+|Total generation time|\~2–4 min on T4 (model loading is the bottleneck)|
 
 Once the models are loaded, actual inference takes about 45–90 seconds. Most of the wait is downloading and loading the model weights on first run.
 
----
+\---
 
-## 🐛 Bugs I Hit and How I Fixed Them
+## Bugs I Hit and How I Fixed Them
 
 **Black output images** — T4 GPUs produce all-black results when the VAE decode runs in FP16. Fix: force `vae.to(dtype=torch.float32)` before the decode step.
 
@@ -163,27 +171,28 @@ Once the models are loaded, actual inference takes about 45–90 seconds. Most o
 
 **Widgets disappearing after restart** — the style dropdown resets when the session restarts. Fix: added a guard that re-creates the widget if it's not found in the current session scope.
 
----
+\---
 
-## 🔮 What I'd Add Next
+## What I'd Add Next
 
-- [ ] LoRA fine-tuning for custom subjects/styles
-- [ ] CFG scale slider for prompt adherence control
-- [ ] Batch generation (multiple outputs per run)
-- [ ] img2img support (start from an existing image)
-- [ ] Gradio web UI for one-click Hugging Face Spaces deployment
-- [ ] SDXL Turbo for near-instant generation
+* \[ ] LoRA fine-tuning for custom subjects/styles
+* \[ ] CFG scale slider for prompt adherence control
+* \[ ] Batch generation (multiple outputs per run)
+* \[ ] img2img support (start from an existing image)
+* \[ ] Gradio web UI for one-click Hugging Face Spaces deployment
+* \[ ] SDXL Turbo for near-instant generation
 
----
+\---
 
-## 📄 License
+## License
 
 MIT — use it, fork it, build on it.
 
----
+\---
 
-## 🙏 Credit
+## &#x20;Credit
 
-- [Stability AI](https://stability.ai/) for the SDXL model weights
-- [Hugging Face Diffusers](https://github.com/huggingface/diffusers) for making this approachable
-- [LAION](https://laion.ai/) for the training data behind the base model
+* [Stability AI](https://stability.ai/) for the SDXL model weights
+* [Hugging Face Diffusers](https://github.com/huggingface/diffusers) for making this approachable
+* [LAION](https://laion.ai/) for the training data behind the base model
+
